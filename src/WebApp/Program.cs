@@ -21,7 +21,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseAntiforgery();
 
 app.UseHttpsRedirection();
 
@@ -29,6 +28,7 @@ app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 
