@@ -39,8 +39,8 @@ jobs:
       run: npx playwright test
       env:
         ESHOP_USE_HTTP_ENDPOINTS: 1
-        USERNAME1: bob
-        PASSWORD: Pass123$
+        USERNAME1: ${{ secrets.USERNAME1 }}
+        PASSWORD: ${{ secrets.PASSWORD }}
     - uses: actions/upload-artifact@v4
       if: always()
       with:
