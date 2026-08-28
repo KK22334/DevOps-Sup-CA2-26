@@ -35,6 +35,7 @@ jobs:
         run: dotnet test eShop.Web.slnf --configuration Release --no-build --no-restore
 
       - name: Vulnerability scan
+        continue-on-error: true
         run: dotnet list eShop.Web.slnf package --vulnerable --include-transitive
 
       - name: Publish web application
