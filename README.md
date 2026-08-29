@@ -10,7 +10,6 @@ A reference .NET application implementing an e-commerce website using a services
 
 This version of eShop is based on .NET 9. 
 
-
 ### Prerequisites
 
 - Fork the eShop repository: https://github.com/LYIT/DevOps-Sup-CA2-26 into your own GitHub account and add me (DocMilo) as a collaborator to your forked repository.

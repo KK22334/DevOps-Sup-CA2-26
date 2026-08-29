@@ -19,11 +19,11 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: actions/setup-dotnet@v4
       with:
         global-json-file: global.json
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: lts/*
     - name: Install dependencies
@@ -39,8 +39,8 @@ jobs:
       run: npx playwright test
       env:
         ESHOP_USE_HTTP_ENDPOINTS: 1
-        USERNAME1: bob
-        PASSWORD: Pass123$
+        USERNAME1: ${{ secrets.USERNAME1 }}
+        PASSWORD: ${{ secrets.PASSWORD }}
     - uses: actions/upload-artifact@v4
       if: always()
       with:

@@ -4,9 +4,13 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddForwardedHeaders();
 
-var redis = builder.AddRedis("redis");
+var redis = builder.AddRedis("redis")
+    .WithImageTag("8.2-alpine");
+
 var rabbitMq = builder.AddRabbitMQ("eventbus")
+    .WithImageTag("4.1-alpine")
     .WithLifetime(ContainerLifetime.Persistent);
+
 var postgres = builder.AddPostgres("postgres")
     .WithImage("ankane/pgvector")
     .WithImageTag("latest")
@@ -69,6 +73,7 @@ var webhooksClient = builder.AddProject<Projects.WebhookClient>("webhooksclient"
 
 var webApp = builder.AddProject<Projects.WebApp>("webapp", launchProfileName)
     .WithExternalHttpEndpoints()
+    .WithEndpoint("http", endpoint => endpoint.Port = 5045)
     .WithUrls(c => c.Urls.ForEach(u => u.DisplayText = $"Online Store ({u.Endpoint?.EndpointName})"))
     .WithReference(basketApi)
     .WithReference(catalogApi)

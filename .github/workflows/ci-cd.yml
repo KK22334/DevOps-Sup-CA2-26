@@ -1,0 +1,118 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build-test-package:
+    name: Build, test and package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore eShop.Web.slnf
+
+      - name: Build
+        run: dotnet build eShop.Web.slnf --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test eShop.Web.slnf --configuration Release --no-build --no-restore
+
+      - name: Vulnerability scan
+        continue-on-error: true
+        run: dotnet list eShop.Web.slnf package --vulnerable --include-transitive
+
+      - name: Publish web application
+        run: dotnet publish src/WebApp/WebApp.csproj --configuration Release --output publish
+
+      - name: Create deployment package
+        run: tar -czf "eshop-web-${{ github.sha }}.tar.gz" -C publish .
+
+      - name: Upload deployment package
+        uses: actions/upload-artifact@v4
+        with:
+          name: eshop-deployment-package
+          path: "eshop-web-${{ github.sha }}.tar.gz"
+          retention-days: 7
+
+  development:
+    name: Deploy to development
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-test-package
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Download deployment package
+        uses: actions/download-artifact@v4
+        with:
+          name: eshop-deployment-package
+
+      - name: Extract deployment package
+        run: |
+          mkdir deployed-development
+          tar -xzf "eshop-web-${{ github.sha }}.tar.gz" -C deployed-development
+          test -n "$(find deployed-development -type f -print -quit)"
+
+      - name: Confirm development deployment
+        run: echo "Development deployment completed from the immutable package."
+
+  staging:
+    name: Deploy to staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: development
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Download deployment package
+        uses: actions/download-artifact@v4
+        with:
+          name: eshop-deployment-package
+
+      - name: Extract deployment package
+        run: |
+          mkdir deployed-staging
+          tar -xzf "eshop-web-${{ github.sha }}.tar.gz" -C deployed-staging
+          test -n "$(find deployed-staging -type f -print -quit)"
+
+      - name: Confirm staging deployment
+        run: echo "Staging deployment completed from the same immutable package."
+
+  production:
+    name: Deploy to production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: staging
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Download deployment package
+        uses: actions/download-artifact@v4
+        with:
+          name: eshop-deployment-package
+
+      - name: Extract deployment package
+        run: |
+          mkdir deployed-production
+          tar -xzf "eshop-web-${{ github.sha }}.tar.gz" -C deployed-production
+          test -n "$(find deployed-production -type f -print -quit)"
+
+      - name: Confirm production deployment
+        run: echo "Production deployment completed from the same immutable package."
