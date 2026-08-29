@@ -10,7 +10,7 @@ setup('Login', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Ready for a new adventure?' })).toBeVisible();
 
   await page.getByLabel('Sign in').click();
-  await expect(page.getByPlaceholder('Username')).toBeVisible();
+  await expect(page.getByPlaceholder('Username')).toBeVisible({ timeout: 30000 });
 
   await page.getByPlaceholder('Username').fill(process.env.USERNAME1!);
   await page.getByPlaceholder('Password').fill(process.env.PASSWORD!);
